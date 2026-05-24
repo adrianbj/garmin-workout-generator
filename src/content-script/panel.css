@@ -10,12 +10,10 @@
   box-sizing: border-box !important;
   border: 1px solid #cfd8dc !important;
   border-radius: 8px !important;
-  /* Outline as a belt-and-suspenders fallback in case page CSS hides any of our border edges.
-     outline-offset: -1px draws it just inside the border, perfectly coincident. */
-  outline: 1px solid #cfd8dc !important;
-  outline-offset: -1px;
   padding: 16px !important;
-  margin: 16px 0 24px !important;
+  /* Bottom margin big enough to absorb Garmin's WorkoutPageHeader margin-top:-30px,
+     which otherwise overlaps our bottom border with its background. */
+  margin: 16px 0 56px !important;
   background: #fff !important;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   color: #263238;
