@@ -1,9 +1,13 @@
 import { buildPanel, type PanelCallbacks, type PanelHandle } from "./panel";
 
-// Selectors for where to attach our panel.
-// IMPORTANT: Verify and adjust at implementation time by inspecting Garmin's DOM during smoke test (T19).
-// Pick a stable container that exists on /modern/workout/create/* and edit pages.
-const GARMIN_ANCHOR_SELECTOR = "main .workout-edit-form, main [data-test-name='workout-edit']";
+// Garmin's workout builder uses CSS Modules with hashed class names like
+// "WorkoutPageContent_workoutPageContainer__0cw-6". The hash rotates per build;
+// the prefix is stable. Substring matching survives bundle updates.
+// Fallback to contentWrapper if the outer container is renamed.
+const GARMIN_ANCHOR_SELECTOR = [
+  '[class*="WorkoutPageContent_workoutPageContainer"]',
+  '[class*="WorkoutPageContent_contentWrapper"]',
+].join(", ");
 
 const MOUNTED_FLAG = "data-gwg-mounted";
 
