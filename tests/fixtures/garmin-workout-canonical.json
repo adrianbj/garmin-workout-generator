@@ -1,0 +1,156 @@
+{
+  "_PLACEHOLDER_DO_NOT_TRUST": "Derived from community libraries (mkuthan/garmin-workouts, ThomasRondof/GarminWorkoutAItoJSON, Pythe1337N/garmin-connect, fulippo/share-your-garmin-workout). Replace with a verbatim live capture — see docs/superpowers/discoveries/garmin-api-shape.md §12 for instructions.",
+  "workoutName": "Easy Run with Interval",
+  "description": "5min warmup · 1km @ 5:00/km · 5min cooldown",
+  "sportType": {
+    "sportTypeId": 1,
+    "sportTypeKey": "running",
+    "displayOrder": 1
+  },
+  "subSportType": "GENERIC",
+  "trainingPlanId": null,
+  "workoutSegments": [
+    {
+      "segmentOrder": 1,
+      "sportType": {
+        "sportTypeId": 1,
+        "sportTypeKey": "running",
+        "displayOrder": 1
+      },
+      "poolLength": null,
+      "poolLengthUnit": null,
+      "avgTrainingSpeed": null,
+      "estimatedDurationInSecs": null,
+      "estimatedDistanceInMeters": null,
+      "estimatedDistanceUnit": null,
+      "estimateType": null,
+      "description": null,
+      "workoutSteps": [
+        {
+          "type": "ExecutableStepDTO",
+          "stepId": 1,
+          "stepOrder": 1,
+          "childStepId": null,
+          "description": null,
+          "stepType": {
+            "stepTypeId": 1,
+            "stepTypeKey": "warmup",
+            "displayOrder": 1
+          },
+          "endCondition": {
+            "conditionTypeId": 2,
+            "conditionTypeKey": "time",
+            "displayOrder": 2,
+            "displayable": true
+          },
+          "endConditionValue": 300,
+          "preferredEndConditionUnit": null,
+          "endConditionCompare": null,
+          "endConditionZone": null,
+          "targetType": {
+            "workoutTargetTypeId": 1,
+            "workoutTargetTypeKey": "no.target",
+            "displayOrder": 1
+          },
+          "targetValueOne": null,
+          "targetValueTwo": null,
+          "zoneNumber": null,
+          "secondaryTargetType": null,
+          "secondaryTargetValueOne": null,
+          "secondaryTargetValueTwo": null,
+          "secondaryZoneNumber": null,
+          "targetValueUnit": null,
+          "secondaryTargetValueUnit": null
+        },
+        {
+          "type": "ExecutableStepDTO",
+          "stepId": 2,
+          "stepOrder": 2,
+          "childStepId": null,
+          "description": null,
+          "stepType": {
+            "stepTypeId": 3,
+            "stepTypeKey": "interval",
+            "displayOrder": 3
+          },
+          "endCondition": {
+            "conditionTypeId": 3,
+            "conditionTypeKey": "distance",
+            "displayOrder": 3,
+            "displayable": true
+          },
+          "endConditionValue": 1000,
+          "preferredEndConditionUnit": {
+            "unitId": 1,
+            "unitKey": "meter",
+            "factor": 100
+          },
+          "endConditionCompare": null,
+          "endConditionZone": null,
+          "targetType": {
+            "workoutTargetTypeId": 6,
+            "workoutTargetTypeKey": "pace.zone",
+            "displayOrder": 6
+          },
+          "targetValueOne": 3.194,
+          "targetValueTwo": 3.472,
+          "zoneNumber": null,
+          "secondaryTargetType": null,
+          "secondaryTargetValueOne": null,
+          "secondaryTargetValueTwo": null,
+          "secondaryZoneNumber": null,
+          "targetValueUnit": null,
+          "secondaryTargetValueUnit": null
+        },
+        {
+          "type": "ExecutableStepDTO",
+          "stepId": 3,
+          "stepOrder": 3,
+          "childStepId": null,
+          "description": null,
+          "stepType": {
+            "stepTypeId": 2,
+            "stepTypeKey": "cooldown",
+            "displayOrder": 2
+          },
+          "endCondition": {
+            "conditionTypeId": 2,
+            "conditionTypeKey": "time",
+            "displayOrder": 2,
+            "displayable": true
+          },
+          "endConditionValue": 300,
+          "preferredEndConditionUnit": null,
+          "endConditionCompare": null,
+          "endConditionZone": null,
+          "targetType": {
+            "workoutTargetTypeId": 1,
+            "workoutTargetTypeKey": "no.target",
+            "displayOrder": 1
+          },
+          "targetValueOne": null,
+          "targetValueTwo": null,
+          "zoneNumber": null,
+          "secondaryTargetType": null,
+          "secondaryTargetValueOne": null,
+          "secondaryTargetValueTwo": null,
+          "secondaryZoneNumber": null,
+          "targetValueUnit": null,
+          "secondaryTargetValueUnit": null
+        }
+      ]
+    }
+  ],
+  "shared": false,
+  "locale": null,
+  "workoutProvider": null,
+  "workoutSourceId": null,
+  "uploadTimestamp": null,
+  "atpPlanId": null,
+  "consumer": null,
+  "consumerName": null,
+  "workoutNameI18nKey": null,
+  "descriptionI18nKey": null,
+  "workoutThumbnailUrl": null,
+  "isSessionTransitionEnabled": null
+}
