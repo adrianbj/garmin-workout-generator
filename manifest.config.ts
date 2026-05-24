@@ -14,7 +14,10 @@ export default defineManifest({
   },
   content_scripts: [
     {
-      matches: ["https://connect.garmin.com/modern/workout/*"],
+      matches: [
+        "https://connect.garmin.com/app/workout/*",
+        "https://connect.garmin.com/modern/workout/*",
+      ],
       js: ["src/content-script/index.ts"],
       run_at: "document_idle",
     },
