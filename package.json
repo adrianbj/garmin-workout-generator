@@ -8,7 +8,8 @@
     "dev": "vite",
     "test": "vitest run",
     "test:watch": "vitest",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "pack": "npm run build && bash scripts/pack-crx.sh"
   },
   "devDependencies": {
     "@crxjs/vite-plugin": "^2.0.0",
