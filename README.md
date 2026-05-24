@@ -88,4 +88,4 @@ Architecture overview:
 
 ## License
 
-MIT. See [LICENSE](./LICENSE) if present, otherwise consider this code MIT-licensed.
+MIT. See [LICENSE](./LICENSE).
