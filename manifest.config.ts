@@ -8,6 +8,10 @@ export default defineManifest({
   permissions: ["storage"],
   host_permissions: ["https://connect.garmin.com/*"],
   options_page: "src/options/options.html",
+  background: {
+    service_worker: "src/background/index.ts",
+    type: "module",
+  },
   content_scripts: [
     {
       matches: ["https://connect.garmin.com/modern/workout/*"],
