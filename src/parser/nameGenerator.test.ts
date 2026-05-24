@@ -41,6 +41,80 @@ describe("generateName", () => {
     expect(generateName(plan)).toBe("12-8-3 @ aerobic threshold");
   });
 
+  it("ignores warmup and cooldown when naming a sandwiched workout", () => {
+    const plan: WorkoutPlan = {
+      sport: "running",
+      steps: [
+        { kind: "interval", intent: "warmup", duration: { unit: "time", seconds: 900 } },
+        { kind: "interval", intent: "work", duration: { unit: "time", seconds: 1800 },
+          target: { kind: "pace_zone", zoneName: "easy" } },
+        { kind: "interval", intent: "cooldown", duration: { unit: "time", seconds: 900 } },
+      ],
+    };
+    // 15min warmup + 30min easy + 15min cooldown — must describe the WORK, not "15-15"
+    expect(generateName(plan)).toBe("30min easy");
+  });
+
+  it("describes a repeat with varied inner steps as Nx(d1-d2-...)", () => {
+    const plan: WorkoutPlan = {
+      sport: "running",
+      steps: [
+        { kind: "interval", intent: "warmup", duration: { unit: "time", seconds: 900 } },
+        { kind: "repeat", count: 3, children: [
+          { kind: "interval", intent: "work", duration: { unit: "time", seconds: 180 } },
+          { kind: "interval", intent: "rest", duration: { unit: "time", seconds: 45 } },
+          { kind: "interval", intent: "work", duration: { unit: "time", seconds: 180 } },
+          { kind: "interval", intent: "rest", duration: { unit: "time", seconds: 45 } },
+          { kind: "interval", intent: "work", duration: { unit: "time", seconds: 120 } },
+          { kind: "interval", intent: "rest", duration: { unit: "time", seconds: 45 } },
+          { kind: "interval", intent: "work", duration: { unit: "time", seconds: 120 } },
+        ]},
+        { kind: "interval", intent: "cooldown", duration: { unit: "time", seconds: 900 } },
+      ],
+    };
+    expect(generateName(plan)).toBe("3x(3-3-2-2)");
+  });
+
+  it("joins multiple main work groups with +", () => {
+    // The user's actual problem case:
+    // 15' warmup, 4x20" strides + 3 sets of 3', 3', 2', 2' w 45" rests, 15' c/d
+    const plan: WorkoutPlan = {
+      sport: "running",
+      steps: [
+        { kind: "interval", intent: "warmup", duration: { unit: "time", seconds: 900 } },
+        { kind: "repeat", count: 4, children: [
+          { kind: "interval", intent: "work", duration: { unit: "time", seconds: 20 }, notes: "stride" },
+        ]},
+        { kind: "repeat", count: 3, children: [
+          { kind: "interval", intent: "work", duration: { unit: "time", seconds: 180 } },
+          { kind: "interval", intent: "rest", duration: { unit: "time", seconds: 45 } },
+          { kind: "interval", intent: "work", duration: { unit: "time", seconds: 180 } },
+          { kind: "interval", intent: "rest", duration: { unit: "time", seconds: 45 } },
+          { kind: "interval", intent: "work", duration: { unit: "time", seconds: 120 } },
+          { kind: "interval", intent: "rest", duration: { unit: "time", seconds: 45 } },
+          { kind: "interval", intent: "work", duration: { unit: "time", seconds: 120 } },
+        ]},
+        { kind: "interval", intent: "cooldown", duration: { unit: "time", seconds: 900 } },
+      ],
+    };
+    expect(generateName(plan)).toBe("4x20s + 3x(3-3-2-2)");
+  });
+
+  it("propagates a shared zone across a varied repeat", () => {
+    const plan: WorkoutPlan = {
+      sport: "running",
+      steps: [
+        { kind: "repeat", count: 3, children: [
+          { kind: "interval", intent: "work", duration: { unit: "time", seconds: 180 },
+            target: { kind: "pace_zone", zoneName: "threshold" } },
+          { kind: "interval", intent: "work", duration: { unit: "time", seconds: 120 },
+            target: { kind: "pace_zone", zoneName: "threshold" } },
+        ]},
+      ],
+    };
+    expect(generateName(plan)).toBe("3x(3-2) @ threshold");
+  });
+
   it("falls back to 'Workout' when nothing distinctive", () => {
     const plan: WorkoutPlan = {
       sport: "running",

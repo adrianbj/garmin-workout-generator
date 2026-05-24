@@ -1,7 +1,11 @@
-import type { WorkoutPlan, Step, IntervalStep } from "./types";
+import type { WorkoutPlan, Step, IntervalStep, Duration } from "./types";
 
-function isWork(s: Step): s is IntervalStep {
-  return s.kind === "interval" && (s.intent === "work" || s.intent === "warmup" || s.intent === "cooldown");
+function isWorkInterval(s: Step): s is IntervalStep {
+  return s.kind === "interval" && s.intent === "work";
+}
+
+function isFraming(s: Step): boolean {
+  return s.kind === "interval" && (s.intent === "warmup" || s.intent === "cooldown");
 }
 
 function describeDuration(step: IntervalStep): string {
@@ -22,6 +26,9 @@ function intervalToken(step: IntervalStep): string {
   if (step.duration.unit === "time" && step.duration.seconds % 60 === 0) {
     return String(step.duration.seconds / 60);
   }
+  if (step.duration.unit === "time") {
+    return `${step.duration.seconds}s`;
+  }
   if (step.duration.unit === "distance" && step.duration.meters % 100 === 0) {
     const m = step.duration.meters;
     return m >= 1000 && m % 1000 === 0 ? `${m / 1000}k` : `${m}`;
@@ -34,40 +41,84 @@ function targetLabel(step: IntervalStep): string | undefined {
   return undefined;
 }
 
+function durationsEqual(a: Duration, b: Duration): boolean {
+  if (a.unit === "time" && b.unit === "time") return a.seconds === b.seconds;
+  if (a.unit === "distance" && b.unit === "distance") return a.meters === b.meters;
+  if (a.unit === "open" && b.unit === "open") return true;
+  return false;
+}
+
+// Describe a single top-level "main" step (already excludes warmup/cooldown framing).
+function describeMainStep(step: Step): string | undefined {
+  if (step.kind === "interval") {
+    if (step.intent !== "work") return undefined; // rest/recovery — naming-irrelevant
+    const dur = describeDuration(step);
+    const zone = targetLabel(step);
+    if (!dur) return undefined;
+    return zone ? `${dur} ${zone}` : dur;
+  }
+
+  // Repeat block — describe by its work children
+  const workChildren = step.children.filter(isWorkInterval);
+  if (workChildren.length === 0) return undefined;
+
+  const [first, ...rest] = workChildren;
+  if (!first) return undefined;
+  const allSameDuration = rest.every((c) => durationsEqual(c.duration, first.duration));
+
+  const zones = new Set(workChildren.map(targetLabel).filter((t): t is string => !!t));
+  const oneZone = zones.size === 1 ? [...zones][0] : undefined;
+
+  if (allSameDuration && workChildren.length === 1) {
+    // Canonical uniform repeat: "5x1k @ 5k"
+    const dur = describeDuration(first);
+    const base = `${step.count}x${dur}`;
+    return oneZone ? `${base} @ ${oneZone}` : base;
+  }
+
+  if (allSameDuration) {
+    // Multiple identical work intervals per rep — unusual but handle it.
+    // e.g., 3x (1k + 1k @ 5k pace) → "3x2x1k @ 5k"
+    const dur = describeDuration(first);
+    const base = `${step.count}x${workChildren.length}x${dur}`;
+    return oneZone ? `${base} @ ${oneZone}` : base;
+  }
+
+  // Varied inner pattern (ladder/progression nested in a repeat): "3x(3-3-2-2) @ zone"
+  const inner = workChildren.map(intervalToken).join("-");
+  const base = `${step.count}x(${inner})`;
+  return oneZone ? `${base} @ ${oneZone}` : base;
+}
+
 export function generateName(plan: WorkoutPlan): string {
-  const workSteps = plan.steps.filter(isWork);
+  // Warmup and cooldown are framing, not content — they shouldn't appear in the name.
+  const mainSteps = plan.steps.filter((s) => !isFraming(s));
+  if (mainSteps.length === 0) return "Workout";
 
-  if (plan.steps.length === 1 && workSteps.length === 1) {
-    const [only] = workSteps;
-    if (!only) return "Workout";
-    const dur = describeDuration(only);
-    const tgt = targetLabel(only);
-    if (dur && tgt) return `${dur} ${tgt}`;
-    if (dur) return dur;
-    return "Workout";
-  }
+  // Detect flat sequence of work intervals (possibly interleaved with rests): "12-8-3 @ zone"
+  const topLevelWorks = mainSteps.filter(isWorkInterval);
+  const onlyIntervalsAtTop = mainSteps.every(
+    (s) => s.kind === "interval" && (s.intent === "work" || s.intent === "rest" || s.intent === "recovery"),
+  );
 
-  if (plan.steps.length === 1 && plan.steps[0]?.kind === "repeat") {
-    const repeat = plan.steps[0];
-    const workChild = repeat.children.find(isWork);
-    if (workChild) {
-      const dur = describeDuration(workChild);
-      const tgt = targetLabel(workChild);
-      const prefix = `${repeat.count}x${dur}`;
-      return tgt ? `${prefix} @ ${tgt}` : prefix;
-    }
-  }
-
-  if (workSteps.length >= 2) {
-    const tokens = workSteps.map(intervalToken);
-    const tgts = new Set(workSteps.map(targetLabel).filter((t): t is string => !!t));
+  if (onlyIntervalsAtTop && topLevelWorks.length >= 2) {
+    const tokens = topLevelWorks.map(intervalToken);
+    const zones = new Set(topLevelWorks.map(targetLabel).filter((t): t is string => !!t));
     const joined = tokens.join("-");
-    if (tgts.size === 1) {
-      const [only] = [...tgts];
-      return `${joined} @ ${only}`;
+    if (joined) {
+      if (zones.size === 1) {
+        const [zone] = [...zones];
+        return `${joined} @ ${zone}`;
+      }
+      return joined;
     }
-    if (joined) return joined;
   }
 
-  return "Workout";
+  // One or more independent main steps (intervals or repeats) — join descriptions with " + ".
+  const parts = mainSteps
+    .map(describeMainStep)
+    .filter((p): p is string => !!p);
+
+  if (parts.length === 0) return "Workout";
+  return parts.join(" + ");
 }
