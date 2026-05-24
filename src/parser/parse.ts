@@ -106,11 +106,16 @@ export async function parse(
   try {
     parsed = JSON.parse(raw);
   } catch (cause) {
+    console.error("[gwg] model output was not valid JSON. Raw output:", raw);
     return err({ code: "MALFORMED", message: "Model output was not valid JSON.", cause });
   }
 
   const schemaResult = workoutPlanSchema.safeParse(parsed);
   if (!schemaResult.success) {
+    console.error("[gwg] model output failed schema validation.");
+    console.error("[gwg] raw output:", raw);
+    console.error("[gwg] parsed JSON:", parsed);
+    console.error("[gwg] Zod issues:", schemaResult.error.issues);
     return err({ code: "MALFORMED", message: "Model output didn't match the workout schema.", cause: schemaResult.error });
   }
 
