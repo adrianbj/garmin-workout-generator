@@ -1,5 +1,5 @@
-import type { ZoneConfig, PaceZone } from "./types";
-import { STORAGE_KEY } from "./types";
+import type { ZoneConfig, PaceZone, Settings } from "./types";
+import { STORAGE_KEY, SETTINGS_KEY } from "./types";
 import { DEFAULT_ZONE_CONFIG } from "./defaults";
 
 function isValidZone(z: unknown): z is PaceZone {
@@ -30,4 +30,20 @@ export async function getZoneConfig(): Promise<ZoneConfig> {
 
 export async function setZoneConfig(config: ZoneConfig): Promise<void> {
   await chrome.storage.sync.set({ [STORAGE_KEY]: config });
+}
+
+export async function getSettings(): Promise<Settings> {
+  const result = await chrome.storage.sync.get(SETTINGS_KEY);
+  const raw = result[SETTINGS_KEY];
+  if (typeof raw === "object" && raw !== null) {
+    const r = raw as Settings;
+    if (typeof r.geminiApiKey === "string" && r.geminiApiKey.trim() !== "") {
+      return { geminiApiKey: r.geminiApiKey.trim() };
+    }
+  }
+  return {};
+}
+
+export async function setSettings(settings: Settings): Promise<void> {
+  await chrome.storage.sync.set({ [SETTINGS_KEY]: settings });
 }

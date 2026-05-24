@@ -7,16 +7,31 @@
   </head>
   <body>
     <main>
-      <h1>Pace zones</h1>
-      <p>Used by the parser to resolve names like "aerobic threshold" to actual paces. Pace is m:ss per km.</p>
-      <table id="zones">
-        <thead>
-          <tr><th>Name</th><th>Min (faster)</th><th>Max (slower)</th><th></th></tr>
-        </thead>
-        <tbody></tbody>
-      </table>
+      <section>
+        <h1>Parser backend</h1>
+        <p>By default the extension parses with Chrome's on-device Gemini Nano (free, no key, ~30s/parse, sometimes flubs notation).
+          Paste a Google AI Studio API key to use Gemini 2.5 Flash instead (free tier covers ~1500 parses/day,
+          ~1s/parse, far more reliable). Get a key at
+          <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">aistudio.google.com/apikey</a>.</p>
+        <label for="apiKey">Gemini API key (optional):</label>
+        <input type="password" id="apiKey" placeholder="AIza..." autocomplete="off" spellcheck="false" />
+      </section>
+
+      <section>
+        <h1>Pace zones</h1>
+        <p>Used by the parser to resolve names like "aerobic threshold" to actual paces. Pace is m:ss per km.</p>
+        <table id="zones">
+          <thead>
+            <tr><th>Name</th><th>Min (faster)</th><th>Max (slower)</th><th></th></tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+        <div class="actions">
+          <button id="add">+ Add zone</button>
+        </div>
+      </section>
+
       <div class="actions">
-        <button id="add">+ Add zone</button>
         <button id="save" class="primary">Save</button>
       </div>
       <p id="status" aria-live="polite"></p>

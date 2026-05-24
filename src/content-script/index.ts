@@ -70,11 +70,17 @@ function onOpenOptions(): void {
 function friendlyParseError(code: string, message: string): string {
   switch (code) {
     case "NOT_AVAILABLE":
-      return "On-device AI isn't ready. Open chrome://on-device-internals to check Gemini Nano status.";
+      return "On-device AI isn't ready. Open chrome://on-device-internals to check Gemini Nano status, or set a Gemini API key in the extension options for better quality.";
     case "MALFORMED":
       return "The model returned an unexpected format. Try rephrasing the description.";
     case "PROMPT_FAILED":
       return `The model failed to respond (${message}). Try again.`;
+    case "BAD_API_KEY":
+      return "Gemini API rejected the key. Check it in the extension options.";
+    case "RATE_LIMITED":
+      return "Hit Gemini's rate limit. Wait a minute and try again.";
+    case "UNREACHABLE":
+      return "Couldn't reach Gemini's API. Check your connection.";
     default:
       return message;
   }

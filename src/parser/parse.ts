@@ -5,8 +5,16 @@ import { workoutPlanSchema, workoutPlanJsonSchema } from "./schema";
 import { buildSystemPrompt } from "./prompt";
 import { validate } from "./validate";
 import { generateName } from "./nameGenerator";
+import { getSettings } from "../storage/storage";
+import { generateWithGeminiApi } from "./geminiApi";
 
-export type ParseFailureCode = "NOT_AVAILABLE" | "MALFORMED" | "PROMPT_FAILED";
+export type ParseFailureCode =
+  | "NOT_AVAILABLE"
+  | "MALFORMED"
+  | "PROMPT_FAILED"
+  | "BAD_API_KEY"
+  | "RATE_LIMITED"
+  | "UNREACHABLE";
 
 export type ParseFailure = {
   code: ParseFailureCode;
@@ -83,24 +91,47 @@ async function getSession(zones: ZoneConfig): Promise<Result<LanguageModelSessio
   return ok(session);
 }
 
+async function runGeminiNano(text: string, zones: ZoneConfig): Promise<Result<string, ParseFailure>> {
+  const sessionResult = await getSession(zones);
+  if (!sessionResult.ok) return sessionResult;
+  const session = sessionResult.value;
+  try {
+    console.log("[gwg] prompting Gemini Nano…");
+    const t0 = performance.now();
+    const raw = await session.prompt(text, { responseConstraint: workoutPlanJsonSchema });
+    console.log(`[gwg] Nano prompt completed in ${Math.round(performance.now() - t0)}ms`);
+    return ok(raw);
+  } catch (cause) {
+    console.error("[gwg] Nano prompt failed:", cause);
+    return err({ code: "PROMPT_FAILED", message: "The on-device model failed to respond.", cause });
+  }
+}
+
+async function runGeminiApi(text: string, zones: ZoneConfig, apiKey: string): Promise<Result<string, ParseFailure>> {
+  console.log("[gwg] prompting Gemini API (Flash)…");
+  const t0 = performance.now();
+  const result = await generateWithGeminiApi(buildSystemPrompt(zones), text, apiKey);
+  console.log(`[gwg] Gemini API completed in ${Math.round(performance.now() - t0)}ms`);
+  if (!result.ok) {
+    return err({ code: result.error.code, message: result.error.message });
+  }
+  return ok(result.text);
+}
+
 export async function parse(
   text: string,
   zones: ZoneConfig,
 ): Promise<Result<ParseSuccess, ParseFailure>> {
-  const sessionResult = await getSession(zones);
-  if (!sessionResult.ok) return sessionResult;
-  const session = sessionResult.value;
+  const settings = await getSettings();
+  const backend = settings.geminiApiKey ? "gemini-api" : "gemini-nano";
+  console.log(`[gwg] using backend: ${backend}`);
 
-  let raw: string;
-  try {
-    console.log("[gwg] prompting model…");
-    const t0 = performance.now();
-    raw = await session.prompt(text, { responseConstraint: workoutPlanJsonSchema });
-    console.log(`[gwg] prompt completed in ${Math.round(performance.now() - t0)}ms`);
-  } catch (cause) {
-    console.error("[gwg] prompt failed:", cause);
-    return err({ code: "PROMPT_FAILED", message: "The on-device model failed to respond.", cause });
-  }
+  const rawResult = settings.geminiApiKey
+    ? await runGeminiApi(text, zones, settings.geminiApiKey)
+    : await runGeminiNano(text, zones);
+
+  if (!rawResult.ok) return rawResult;
+  const raw = rawResult.value;
 
   let parsed: unknown;
   try {

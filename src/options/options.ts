@@ -1,4 +1,4 @@
-import { getZoneConfig, setZoneConfig } from "../storage/storage";
+import { getZoneConfig, setZoneConfig, getSettings, setSettings } from "../storage/storage";
 import type { ZoneConfig, PaceZone } from "../storage/types";
 import { parsePaceField } from "../storage/paceParser";
 import { formatDuration } from "../shared/format";
@@ -7,6 +7,7 @@ const tbody = document.querySelector<HTMLTableSectionElement>("#zones tbody")!;
 const status = document.querySelector<HTMLParagraphElement>("#status")!;
 const addBtn = document.querySelector<HTMLButtonElement>("#add")!;
 const saveBtn = document.querySelector<HTMLButtonElement>("#save")!;
+const apiKeyInput = document.querySelector<HTMLInputElement>("#apiKey")!;
 
 function row(zone?: PaceZone): HTMLTableRowElement {
   const tr = document.createElement("tr");
@@ -49,9 +50,10 @@ function readForm(): { config: ZoneConfig | null; errors: string[] } {
 }
 
 async function load(): Promise<void> {
-  const config = await getZoneConfig();
+  const [config, settings] = await Promise.all([getZoneConfig(), getSettings()]);
   tbody.innerHTML = "";
   for (const z of config.zones) tbody.appendChild(row(z));
+  apiKeyInput.value = settings.geminiApiKey ?? "";
 }
 
 addBtn.addEventListener("click", () => tbody.appendChild(row()));
@@ -63,8 +65,13 @@ saveBtn.addEventListener("click", async () => {
     status.style.color = "#c62828";
     return;
   }
-  await setZoneConfig(config);
-  status.textContent = `Saved ${config.zones.length} zone${config.zones.length === 1 ? "" : "s"}.`;
+  const apiKey = apiKeyInput.value.trim();
+  await Promise.all([
+    setZoneConfig(config),
+    setSettings(apiKey ? { geminiApiKey: apiKey } : {}),
+  ]);
+  const backend = apiKey ? "Gemini API (Flash)" : "Gemini Nano (on-device)";
+  status.textContent = `Saved ${config.zones.length} zone${config.zones.length === 1 ? "" : "s"}. Using ${backend}.`;
   status.style.color = "#2e7d32";
 });
 

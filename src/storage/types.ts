@@ -11,4 +11,9 @@ export type ZoneConfig = {
   unit: PaceUnit;
 };
 
+export type Settings = {
+  geminiApiKey?: string;
+};
+
 export const STORAGE_KEY = "gwg.zoneConfig.v1" as const;
+export const SETTINGS_KEY = "gwg.settings.v1" as const;
