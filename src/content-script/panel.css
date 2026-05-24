@@ -1,11 +1,21 @@
 .gwg-root {
-  border: 1px solid #cfd8dc;
-  border-radius: 8px;
-  padding: 16px;
-  margin: 16px 0;
-  background: #fff;
+  /* Defensive against Garmin's page styles (CSS Modules with high specificity).
+     !important on borders prevents bottom-border being overridden. isolation creates a
+     fresh stacking context so neighboring page sections can't visually overlap us. */
+  display: block !important;
+  position: relative;
+  isolation: isolate;
+  z-index: 1;
+  width: auto;
+  box-sizing: border-box !important;
+  border: 1px solid #cfd8dc !important;
+  border-radius: 8px !important;
+  padding: 16px !important;
+  margin: 16px 0 24px !important;
+  background: #fff !important;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   color: #263238;
+  overflow: visible !important;
 }
 .gwg-title { margin: 0 0 8px; font-size: 16px; font-weight: 600; }
 .gwg-textarea {
