@@ -5,4 +5,5 @@ dist/
 .DS_Store
 .env*
 *.crx
+*.zip
 .crx-key.pem

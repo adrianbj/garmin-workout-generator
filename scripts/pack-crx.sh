@@ -33,6 +33,14 @@ else
 fi
 
 mv "$ROOT/dist.crx" "$OUT"
+
+# Also produce a plain zip — recipients can "Load unpacked" the unzipped
+# contents in chrome://extensions, bypassing Chrome's self-signed CRX block.
+ZIP_OUT="$ROOT/garmin-workout-generator-$VERSION.zip"
+rm -f "$ZIP_OUT"
+( cd "$DIST" && zip -qr "$ZIP_OUT" . )
+
 echo ""
-echo "Packed: $OUT"
-echo "Size:   $(du -h "$OUT" | cut -f1)"
+echo "Packed:"
+echo "  CRX: $OUT  ($(du -h "$OUT" | cut -f1))   — for signed self-hosted distribution"
+echo "  ZIP: $ZIP_OUT  ($(du -h "$ZIP_OUT" | cut -f1))   — unzip + Load unpacked in chrome://extensions"
