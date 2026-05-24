@@ -1,5 +1,6 @@
 import type { WorkoutPlan, ParseError } from "../parser/types";
 import { renderPreview } from "./preview";
+import { escapeHtml } from "../shared/escape";
 
 export type PanelCallbacks = {
   onGenerate: (text: string) => Promise<void>;
@@ -73,8 +74,8 @@ export function buildPanel(callbacks: PanelCallbacks): PanelHandle {
   function renderErrors(errors: ParseError[]): string {
     if (errors.length === 0) return "";
     const items = errors.map((e) => {
-      const suggestion = e.suggestion ? ` <em>(did you mean "${e.suggestion}"?)</em>` : "";
-      return `<li class="gwg-err gwg-err-${e.severity}">${e.message}${suggestion}</li>`;
+      const suggestion = e.suggestion ? ` <em>(did you mean "${escapeHtml(e.suggestion)}"?)</em>` : "";
+      return `<li class="gwg-err gwg-err-${e.severity}">${escapeHtml(e.message)}${suggestion}</li>`;
     }).join("");
     return `<ul class="gwg-errors">${items}</ul>`;
   }
@@ -121,7 +122,7 @@ export function buildPanel(callbacks: PanelCallbacks): PanelHandle {
         return;
       case "error":
         if (textarea.value !== state.text) textarea.value = state.text;
-        messageBox.innerHTML = `<p class="gwg-error">${state.message}</p>`;
+        messageBox.innerHTML = `<p class="gwg-error">${escapeHtml(state.message)}</p>`;
         return;
     }
   }

@@ -23,6 +23,7 @@ export async function pageContextFetch(req: PageFetchRequest): Promise<PageFetch
     };
 
     const script = document.createElement("script");
+    const serializedReq = JSON.stringify(req).replace(/<\/script/gi, "<\\/script");
     script.textContent = `
       (async () => {
         const port = (await new Promise(r => {
@@ -34,7 +35,7 @@ export async function pageContextFetch(req: PageFetchRequest): Promise<PageFetch
           });
         }));
         try {
-          const req = ${JSON.stringify(req)};
+          const req = ${serializedReq};
           const res = await fetch(req.url, {
             method: req.method,
             credentials: "include",

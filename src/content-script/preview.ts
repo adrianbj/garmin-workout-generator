@@ -1,14 +1,6 @@
 import type { WorkoutPlan, Step, IntervalStep } from "../parser/types";
 import { formatDuration } from "../shared/format";
-
-function escape(s: string): string {
-  return s
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#39;");
-}
+import { escapeHtml as escape } from "../shared/escape";
 
 const INTENT_LABEL: Record<IntervalStep["intent"], string> = {
   warmup: "Warm up",
