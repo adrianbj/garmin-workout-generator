@@ -10,6 +10,10 @@
   box-sizing: border-box !important;
   border: 1px solid #cfd8dc !important;
   border-radius: 8px !important;
+  /* Outline as a belt-and-suspenders fallback in case page CSS hides any of our border edges.
+     outline-offset: -1px draws it just inside the border, perfectly coincident. */
+  outline: 1px solid #cfd8dc !important;
+  outline-offset: -1px;
   padding: 16px !important;
   margin: 16px 0 24px !important;
   background: #fff !important;
