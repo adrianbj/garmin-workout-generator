@@ -145,7 +145,7 @@ describe("translate", () => {
       steps: [{ kind: "interval", intent: "work", duration: { unit: "time", seconds: 1800 },
         target: { kind: "pace_zone", zoneName: "easy" } }],
     };
-    expect(translate(plan, zones).workoutName).toBe("30min easy");
+    expect(translate(plan, zones).workoutName).toBe("30' easy");
   });
 
   it("assigns stepOrder sequentially across nested steps", () => {

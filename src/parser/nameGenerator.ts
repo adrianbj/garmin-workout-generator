@@ -8,11 +8,14 @@ function isFraming(s: Step): boolean {
   return s.kind === "interval" && (s.intent === "warmup" || s.intent === "cooldown");
 }
 
+// Running shorthand: ' for minutes, " for seconds, k for km, m for meters.
+// Used in both single-step descriptions ("45' easy") and joined tokens ("3'-3'-2'-2'")
+// so the unit is never ambiguous and matches how runners write workouts.
 function describeDuration(step: IntervalStep): string {
   if (step.duration.unit === "time") {
     const sec = step.duration.seconds;
-    if (sec >= 60 && sec % 60 === 0) return `${sec / 60}min`;
-    return `${Math.round(sec)}s`;
+    if (sec >= 60 && sec % 60 === 0) return `${sec / 60}'`;
+    return `${Math.round(sec)}"`;
   }
   if (step.duration.unit === "distance") {
     const m = step.duration.meters;
@@ -22,19 +25,7 @@ function describeDuration(step: IntervalStep): string {
   return "";
 }
 
-function intervalToken(step: IntervalStep): string {
-  if (step.duration.unit === "time" && step.duration.seconds % 60 === 0) {
-    return String(step.duration.seconds / 60);
-  }
-  if (step.duration.unit === "time") {
-    return `${step.duration.seconds}s`;
-  }
-  if (step.duration.unit === "distance" && step.duration.meters % 100 === 0) {
-    const m = step.duration.meters;
-    return m >= 1000 && m % 1000 === 0 ? `${m / 1000}k` : `${m}`;
-  }
-  return describeDuration(step);
-}
+const intervalToken = describeDuration;
 
 function targetLabel(step: IntervalStep): string | undefined {
   if (step.target?.kind === "pace_zone") return step.target.zoneName;

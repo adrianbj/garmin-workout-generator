@@ -9,7 +9,7 @@ describe("generateName", () => {
       steps: [{ kind: "interval", intent: "work", duration: { unit: "time", seconds: 2700 },
         target: { kind: "pace_zone", zoneName: "easy" } }],
     };
-    expect(generateName(plan)).toBe("45min easy");
+    expect(generateName(plan)).toBe("45' easy");
   });
 
   it("describes a uniform repeat", () => {
@@ -38,7 +38,7 @@ describe("generateName", () => {
           target: { kind: "pace_zone", zoneName: "aerobic threshold" } },
       ],
     };
-    expect(generateName(plan)).toBe("12-8-3 @ aerobic threshold");
+    expect(generateName(plan)).toBe(`12'-8'-3' @ aerobic threshold`);
   });
 
   it("ignores warmup and cooldown when naming a sandwiched workout", () => {
@@ -52,7 +52,7 @@ describe("generateName", () => {
       ],
     };
     // 15min warmup + 30min easy + 15min cooldown — must describe the WORK, not "15-15"
-    expect(generateName(plan)).toBe("30min easy");
+    expect(generateName(plan)).toBe("30' easy");
   });
 
   it("describes a repeat with varied inner steps as Nx(d1-d2-...)", () => {
@@ -72,7 +72,7 @@ describe("generateName", () => {
         { kind: "interval", intent: "cooldown", duration: { unit: "time", seconds: 900 } },
       ],
     };
-    expect(generateName(plan)).toBe("3x(3-3-2-2)");
+    expect(generateName(plan)).toBe(`3x(3'-3'-2'-2')`);
   });
 
   it("joins multiple main work groups with +", () => {
@@ -97,7 +97,7 @@ describe("generateName", () => {
         { kind: "interval", intent: "cooldown", duration: { unit: "time", seconds: 900 } },
       ],
     };
-    expect(generateName(plan)).toBe("4x20s + 3x(3-3-2-2)");
+    expect(generateName(plan)).toBe(`4x20" + 3x(3'-3'-2'-2')`);
   });
 
   it("propagates a shared zone across a varied repeat", () => {
@@ -112,7 +112,7 @@ describe("generateName", () => {
         ]},
       ],
     };
-    expect(generateName(plan)).toBe("3x(3-2) @ threshold");
+    expect(generateName(plan)).toBe(`3x(3'-2') @ threshold`);
   });
 
   it("falls back to 'Workout' when nothing distinctive", () => {
