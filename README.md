@@ -26,6 +26,8 @@ The extension is not yet on the Chrome Web Store. To install the current build:
 
 Open the extension's Options page (via `chrome://extensions` → Garmin Plain-Language Workout Generator → Details → Extension options).
 
+![Options page: Gemini API key field and pace zone editor](./screenshots/options-page.png)
+
 ### 1. Gemini API key (strongly recommended)
 
 The extension parses your descriptions using Google's Gemini 2.5 Flash. Without a key it falls back to Chrome's on-device Gemini Nano, which is significantly less reliable on real workouts.
