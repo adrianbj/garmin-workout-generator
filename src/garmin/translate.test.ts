@@ -101,6 +101,7 @@ describe("translate", () => {
       expect(repeat.numberOfIterations).toBe(5);
       expect(repeat.endCondition.conditionTypeKey).toBe("iterations");
       expect(repeat.workoutSteps).toHaveLength(2);
+      expect(repeat.skipLastRestStep).toBe(true);
     }
   });
 

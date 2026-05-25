@@ -21,6 +21,9 @@ export type GarminRepeatStep = {
   stepType: GarminStepType;
   numberOfIterations: number;
   endCondition: GarminEndCondition;
+  // When true, the watch skips the final rest interval inside the repeat
+  // group on the last iteration. Default behavior in this extension: true.
+  skipLastRestStep: boolean;
   workoutSteps: GarminWorkoutStep[];
 };
 

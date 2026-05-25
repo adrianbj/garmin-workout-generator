@@ -100,6 +100,7 @@ function encodeStep(step: Step, zones: ZoneConfig, counter: Counter): GarminWork
     stepType: STEP_TYPE.repeat,
     numberOfIterations: step.count,
     endCondition: END_CONDITION.iterations,
+    skipLastRestStep: true,
     workoutSteps: step.children.map((c) => encodeStep(c, zones, counter)),
   };
   return repeat;
