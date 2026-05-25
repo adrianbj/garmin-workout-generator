@@ -17,54 +17,94 @@ type AppState =
 
 let state: AppState = { mode: "idle", text: "" };
 let handle: PanelHandle | undefined;
+let contextInvalidated = false;
 
 function render() {
   if (!handle) return;
   handle.setState(state as PanelState);
 }
 
+// True when the extension has been reloaded/updated while this content script
+// is still running on the page — chrome.* APIs throw "Extension context invalidated"
+// in that state. The page needs to be refreshed.
+function isContextInvalidated(e: unknown): boolean {
+  return e instanceof Error && /Extension context invalidated/i.test(e.message);
+}
+
+function markPageStale(text: string): void {
+  contextInvalidated = true;
+  state = {
+    mode: "error",
+    text,
+    message: "Extension was just updated — refresh this page (Cmd+Shift+R) to continue.",
+  };
+  render();
+}
+
 async function bootstrap() {
-  const zones = await getZoneConfig();
-  if (zones.zones.length === 0) {
-    state = { mode: "needs-config" };
-    render();
-    return;
+  try {
+    const zones = await getZoneConfig();
+    if (zones.zones.length === 0) {
+      state = { mode: "needs-config" };
+      render();
+      return;
+    }
+  } catch (e) {
+    if (isContextInvalidated(e)) markPageStale(state.mode === "idle" ? state.text : "");
+    else throw e;
   }
 }
 
 async function onGenerate(text: string): Promise<void> {
+  if (contextInvalidated) return;
   if (text.trim() === "") return;
   state = { mode: "loading", text };
   render();
-  const zones = await getZoneConfig();
-  const result = await parse(text, zones);
-  if (!result.ok) {
-    state = { mode: "error", text, message: friendlyParseError(result.error.code, result.error.message) };
+  try {
+    const zones = await getZoneConfig();
+    const result = await parse(text, zones);
+    if (!result.ok) {
+      state = { mode: "error", text, message: friendlyParseError(result.error.code, result.error.message) };
+      render();
+      return;
+    }
+    state = { mode: "ready", text, plan: result.value.plan, errors: result.value.errors };
     render();
-    return;
+  } catch (e) {
+    if (isContextInvalidated(e)) markPageStale(text);
+    else throw e;
   }
-  state = { mode: "ready", text, plan: result.value.plan, errors: result.value.errors };
-  render();
 }
 
 async function onSave(): Promise<void> {
+  if (contextInvalidated) return;
   if (state.mode !== "ready") return;
   const { text, plan } = state;
   state = { mode: "saving", text, plan };
   render();
-  const zones = await getZoneConfig();
-  const garminJson = translate(plan, zones);
-  const result = await createWorkout(garminJson);
-  if (!result.ok) {
-    state = { mode: "error", text, message: friendlyGarminError(result.error.code, result.error.message) };
-    render();
-    return;
+  try {
+    const zones = await getZoneConfig();
+    const garminJson = translate(plan, zones);
+    const result = await createWorkout(garminJson);
+    if (!result.ok) {
+      state = { mode: "error", text, message: friendlyGarminError(result.error.code, result.error.message) };
+      render();
+      return;
+    }
+    window.location.assign(`/app/workout/${result.value.workoutId}?workoutType=running`);
+  } catch (e) {
+    if (isContextInvalidated(e)) markPageStale(text);
+    else throw e;
   }
-  window.location.assign(`/app/workout/${result.value.workoutId}?workoutType=running`);
 }
 
 function onOpenOptions(): void {
-  chrome.runtime.sendMessage({ type: "open-options" });
+  if (contextInvalidated) return;
+  try {
+    chrome.runtime.sendMessage({ type: "open-options" });
+  } catch (e) {
+    if (isContextInvalidated(e)) markPageStale("");
+  }
 }
 
 function friendlyParseError(code: string, message: string): string {
