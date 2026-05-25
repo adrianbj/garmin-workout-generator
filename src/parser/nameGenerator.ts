@@ -32,6 +32,28 @@ function targetLabel(step: IntervalStep): string | undefined {
   return undefined;
 }
 
+// Walk a sequence of steps, pairing each work interval with its immediately-following
+// rest/recovery (if any) and emitting tokens like "3'/45"" or just "3'" for an
+// unpaired final work. Nested repeats are skipped (this is used inside a single
+// repeat's children or for a top-level flat sequence).
+function pairedWorkRestTokens(children: Step[]): string[] {
+  const tokens: string[] = [];
+  for (let i = 0; i < children.length; i++) {
+    const child = children[i];
+    if (!child || child.kind !== "interval" || child.intent !== "work") continue;
+    const workToken = intervalToken(child);
+    if (!workToken) continue;
+    const next = children[i + 1];
+    if (next && next.kind === "interval" && (next.intent === "rest" || next.intent === "recovery")) {
+      const restToken = intervalToken(next);
+      tokens.push(restToken ? `${workToken}/${restToken}` : workToken);
+    } else {
+      tokens.push(workToken);
+    }
+  }
+  return tokens;
+}
+
 function durationsEqual(a: Duration, b: Duration): boolean {
   if (a.unit === "time" && b.unit === "time") return a.seconds === b.seconds;
   if (a.unit === "distance" && b.unit === "distance") return a.meters === b.meters;
@@ -85,8 +107,8 @@ function describeMainStep(step: Step): string | undefined {
     return oneZone ? `${base} @ ${oneZone}` : base;
   }
 
-  // Varied inner pattern (ladder/progression nested in a repeat): "3x(3-3-2-2) @ zone"
-  const inner = workChildren.map(intervalToken).join("-");
+  // Varied inner pattern (ladder/progression nested in a repeat): "3x(3'/45"-3'/45"-2'/45"-2') @ zone"
+  const inner = pairedWorkRestTokens(step.children).join("-");
   const base = `${step.count}x(${inner})`;
   return oneZone ? `${base} @ ${oneZone}` : base;
 }
@@ -103,7 +125,7 @@ export function generateName(plan: WorkoutPlan): string {
   );
 
   if (onlyIntervalsAtTop && topLevelWorks.length >= 2) {
-    const tokens = topLevelWorks.map(intervalToken);
+    const tokens = pairedWorkRestTokens(mainSteps);
     const zones = new Set(topLevelWorks.map(targetLabel).filter((t): t is string => !!t));
     const joined = tokens.join("-");
     if (joined) {

@@ -48,7 +48,7 @@ describe("generateName", () => {
           target: { kind: "pace_zone", zoneName: "aerobic threshold" } },
       ],
     };
-    expect(generateName(plan)).toBe(`12'-8'-3' @ aerobic threshold`);
+    expect(generateName(plan)).toBe(`12'/2'-8'/2'-3' @ aerobic threshold`);
   });
 
   it("ignores warmup and cooldown when naming a sandwiched workout", () => {
@@ -82,7 +82,7 @@ describe("generateName", () => {
         { kind: "interval", intent: "cooldown", duration: { unit: "time", seconds: 900 } },
       ],
     };
-    expect(generateName(plan)).toBe(`3x(3'-3'-2'-2')`);
+    expect(generateName(plan)).toBe(`3x(3'/45"-3'/45"-2'/45"-2')`);
   });
 
   it("joins multiple main work groups with +", () => {
@@ -107,7 +107,7 @@ describe("generateName", () => {
         { kind: "interval", intent: "cooldown", duration: { unit: "time", seconds: 900 } },
       ],
     };
-    expect(generateName(plan)).toBe(`4x20" + 3x(3'-3'-2'-2')`);
+    expect(generateName(plan)).toBe(`4x20" + 3x(3'/45"-3'/45"-2'/45"-2')`);
   });
 
   it("propagates a shared zone across a varied repeat", () => {
@@ -122,7 +122,7 @@ describe("generateName", () => {
         ]},
       ],
     };
-    expect(generateName(plan)).toBe(`3x(3'-2') @ threshold`);
+    expect(generateName(plan)).toBe(`3x(3'-2') @ threshold`);  // no rests in this plan
   });
 
   it("falls back to 'Workout' when nothing distinctive", () => {
