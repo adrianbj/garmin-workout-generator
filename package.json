@@ -10,7 +10,8 @@
     "test:watch": "vitest",
     "typecheck": "tsc --noEmit",
     "gen-icons": "bash scripts/gen-icons.sh",
-    "pack": "npm run build && bash scripts/pack-crx.sh"
+    "pack": "npm run build && bash scripts/pack-crx.sh",
+    "release": "bash scripts/release.sh"
   },
   "devDependencies": {
     "@crxjs/vite-plugin": "^2.0.0",
